@@ -74,16 +74,95 @@ def analyze_program(binary_path):
     return variable_types
 
 
-if __name__ == "__main__":
-    import sys
+# if __name__ == "__main__":
+#     import sys
 
-    if len(sys.argv) != 2:
-        print("Usage: python script.py <binary_path>")
-        sys.exit(1)
+#     if len(sys.argv) != 2:
+#         print("Usage: python script.py <binary_path>")
+#         sys.exit(1)
 
-    binary_path = sys.argv[1]
+#     binary_path = sys.argv[1]
+#     recovered_types = analyze_program(binary_path)
+
+#     print("Variable Types Inferred:")
+#     for offset, types in recovered_types.items():
+#         print(f"  Offset: {offset}, Types: {', '.join(types)}")
+
+
+
+
+
+# compare all files in in student_example
+def process_file(binary_path):
+    output_file = os.path.splitext(binary_path)[0] + "-out.csv"
     recovered_types = analyze_program(binary_path)
 
-    print("Variable Types Inferred:")
-    for offset, types in recovered_types.items():
-        print(f"  Offset: {offset}, Types: {', '.join(types)}")
+    with open(output_file, "w") as f:
+        # change to output csv in same format
+        for offset, types in recovered_types.items():
+            f.writef("  Offset: {offset}, Types: {', '.join(types)}\n")
+            
+            
+def compare_types(A, B):
+    types = {"char", "bool", "int_32", "uint_32", "int_8", "uint_8"}
+    ints = {"int_32", "uint_32", "int_8", "uint_8"}
+    signed_ints = {"int_32", "int_8"}
+    unsigned_ints = {"uint_32", "uint_8"}
+    ints_8 = {"int_8", "uint_8"}
+    int_32 = {"int_32", "uint_32"}
+    score = 0
+    if A == B:
+        score = 1
+    elif A in ints and B in ints:
+        score = 0.5
+        if A in signed_ints and B in signed_ints:
+            score += 0.25
+        elif A in unsigned_ints and B in unsigned_ints:
+            score += 0.25
+            
+        if A in ints_8 and B in ints_8:
+            score += 0.15
+        elif A in int_32 and B in int_32:
+            score += 0.15
+    return score
+        
+    
+            
+def compare_files(file1, file2):
+    with open(file1, "r") as f1, open(file2, "r") as f2:
+        f1 = f1.read().strip().split(', ')
+        f2 = f2.read().strip().split(', ')
+        
+        # num args
+        if f1[0] != f2[0]:
+            return 0
+            
+        # compare types
+        score = 0
+        for i in range(1, len(f1)):
+            score += compare_types(f1[i], f2[i]) 
+        score = score / len(f1[1:])
+
+        return score        
+
+def main():
+    fdr = "student_examples"
+    
+    total_score = 0
+    
+    for f in os.listdir(fdr):
+        p = os.path.join(fdr, f)
+        
+        if f.endswith(".c"):
+            print(f"Processing {f}...")
+            process_file(p)
+            
+            #total_score += compare_files(the csv for file f, [the output csv])
+            
+    print("Accuracy score:", total_score / len(os.listdir(fdr)))
+            
+
+
+if __name__ == "__main__":
+    import sys
+    test()
