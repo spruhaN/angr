@@ -89,21 +89,22 @@ def analyze_program(binary_path):
 #         print(f"  Offset: {offset}, Types: {', '.join(types)}")
 
 
-
-
-
-# compare all files in in student_example
 def process_file(binary_path):
-    output_file = os.path.splitext(binary_path)[0] + "-out.csv"
+    # input: c file 
+    # output: ideally a csv file with the types of the variables
+    #TODO: fix the output to be <#, type, type, etc> format
+    
+    output = os.path.splitext(binary_path)[0] + "-out.csv"
     recovered_types = analyze_program(binary_path)
 
-    with open(output_file, "w") as f:
-        # change to output csv in same format
+    with open(output, "w") as f:
         for offset, types in recovered_types.items():
             f.writef("  Offset: {offset}, Types: {', '.join(types)}\n")
-            
+    return output
             
 def compare_types(A, B):
+    # input: two types
+    # output: a score between 0 and 1
     types = {"char", "bool", "int_32", "uint_32", "int_8", "uint_8"}
     ints = {"int_32", "uint_32", "int_8", "uint_8"}
     signed_ints = {"int_32", "int_8"}
@@ -126,43 +127,41 @@ def compare_types(A, B):
             score += 0.15
     return score
         
-    
             
 def compare_files(file1, file2):
+    # input: two csv files
+    # output: prints the similarity score between 0 and 1
     with open(file1, "r") as f1, open(file2, "r") as f2:
         f1 = f1.read().strip().split(', ')
         f2 = f2.read().strip().split(', ')
         
-        # num args
+        # num argss
         if f1[0] != f2[0]:
+            print("Score: 0")     
             return 0
             
-        # compare types
+        # compare typess
         score = 0
         for i in range(1, len(f1)):
             score += compare_types(f1[i], f2[i]) 
         score = score / len(f1[1:])
 
-        return score        
+        print("Score:", score)     
 
 def main():
-    fdr = "student_examples"
     
-    total_score = 0
-    
+    fdr = "student_examples"    
     for f in os.listdir(fdr):
         p = os.path.join(fdr, f)
+        p_csv = os.path.splitext(p)[0] + ".csv"
         
         if f.endswith(".c"):
             print(f"Processing {f}...")
-            process_file(p)
+            output = process_file(p)
             
-            #total_score += compare_files(the csv for file f, [the output csv])
-            
-    print("Accuracy score:", total_score / len(os.listdir(fdr)))
-            
+            # print the scoree
+            compare_files(p_csv, output)            
 
 
 if __name__ == "__main__":
     import sys
-    test()
