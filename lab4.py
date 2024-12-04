@@ -1,4 +1,6 @@
-import angr
+# import angr
+import sys
+import os
 
 def infer_variable_types(stack_offsets, block):
     variable_types = {}
@@ -132,21 +134,21 @@ def compare_files(file1, file2):
     # input: two csv files
     # output: prints the similarity score between 0 and 1
     with open(file1, "r") as f1, open(file2, "r") as f2:
-        f1 = f1.read().strip().split(', ')
-        f2 = f2.read().strip().split(', ')
+  
+        f1 = [element.strip() for element in f1.readline().split(",")]
+        f2 = [element.strip() for element in f2.readline().split(",")]
         
         # num argss
         if f1[0] != f2[0]:
-            print("Score: 0")     
             return 0
             
         # compare typess
         score = 0
         for i in range(1, len(f1)):
             score += compare_types(f1[i], f2[i]) 
-        score = score / len(f1[1:])
+        score = score / (len(f1)-1)
 
-        print("Score:", score)     
+        return score    
 
 def main():
     
@@ -156,12 +158,11 @@ def main():
         p_csv = os.path.splitext(p)[0] + ".csv"
         
         if f.endswith(".c"):
-            print(f"Processing {f}...")
-            output = process_file(p)
+            # output = process_file(p)
+            output = "student_examples/russ.csv"
             
             # print the scoree
-            compare_files(p_csv, output)            
+            score = compare_files(p_csv, output) 
+            print(f"{score:.2f}" + " " + f)   
 
-
-if __name__ == "__main__":
-    import sys
+main()
